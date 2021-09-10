@@ -29,26 +29,34 @@ struct DogMode : Mode {
         uint8_t downs = 0;
         uint8_t pressed = 0;
     } left, right, down, up;
-
+    
+    //PPU screen is 256x240 with (0,0) at lower left
+    glm::vec2 scene_radius = glm::vec2(256.0f, 240.0f);        //shape of scene //TODO: need to figure out exact size in pixel
+    glm::vec2 player_radius = glm::vec2(8.0f, 4.0f);       //dog size: 2*1 sprite, 16*8 pixel
+    glm::vec2 cat_radius = glm::vec2(8.0f, 4.0f);          //cat size: 2*1 sprite, 16*8 pixel
+    glm::vec2 rock_radius = glm::vec2(8.0f, 8.0f);         //rock size: 2*2 sprite, 16*16 pixel
+    glm::vec2 floor_radius = glm::vec2(8.0f, 8.0f);        //floor size: 2*2 sprite, 16*16 pixel
+    
 
     //player state:
-    glm::vec2 player_at = glm::vec2(0.0f);
-    std::string floor_color = "pink";       // floor color under player, pink or green
-    bool hitCat = false;                    // lose if hit cat
-    bool reach_end = false;                 // whether reach destination
+    glm::vec2 player_at = glm::vec2(2.0f, 2.0f);    //location of dog head // TODO: set player initial position
+    std::string floor_color = "pink";               //floor color under player, pink or green
+    bool hitCat = false;                            //lose if hit cat
+    bool reach_end = false;                         //whether reach destination
+    
+    float move_cd = 2.0f;            //move cool down
+    float move_tick = 0.0f;          //time elapse since last move
     
     //cat state:
-    const int cat_num = 5;                  // number of cats
-    std::vector< glm::vec2 > cat_at;        // cat positions
+    const int cat_num = 5;                  //number of cats
+    std::vector< glm::vec2 > cats;          //cat positions
     
     //floor state:
-    //TODO: maybe floor is not update by time, but by player input
-    float colorChange_cd = 2.0f;            // color change cool down
-    float colorChange_tick = 0.0f;          // time elapse since last color change
-
+    glm::vec2 destination = glm::vec2(248.0f, 232.0f);       //location of destination //TODO: may need to tune
+    
     //rock positions:
     const int rock_num = 10;                // number of rocks
-    std::vector< glm::vec2 > rock_at;       // position of obstacles
+    std::vector< glm::vec2 > rocks;       // position of obstacles
     
     
     //----- drawing handled by PPU466 -----
