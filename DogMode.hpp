@@ -38,14 +38,17 @@ struct DogMode : Mode {
     bool reach_end = false;                 // whether reach destination
     
     //cat state:
-    int cat_num = 5;
-    std::vector< glm::vec2 > cat_at;
+    const int cat_num = 5;                  // number of cats
+    std::vector< glm::vec2 > cat_at;        // cat positions
     
     //floor state:
+    //TODO: maybe floor is not update by time, but by player input
     float colorChange_cd = 2.0f;            // color change cool down
     float colorChange_tick = 0.0f;          // time elapse since last color change
 
-    
+    //rock positions:
+    const int rock_num = 10;                // number of rocks
+    std::vector< glm::vec2 > rock_at;       // position of obstacles
     
     
     //----- drawing handled by PPU466 -----
