@@ -18,9 +18,22 @@
 
 DogMode::DogMode(){
     //TODO: implement this
-    {
-    //---------load asset-------------
+    {//---------load asset-------------
+    //PPU screen: 256x240, (0,0) at lower left
+    //PPU Palette table: 8 palatte; Palatte: 2-bit indexed, RGBA
     
+    //PPU Tile table: 256 -- 16*16 tiles; Tile: 2-bit indexed, 8*8
+    // For example, to read the color index at pixel (2,7):
+    //  bit0_at_2_7 = (tile.bit0[7] >> 2) & 1;
+    //  bit1_at_2_7 = (tile.bit1[7] >> 2) & 1;
+    //  color_index_at_2_7 = (bit1_at_2_7 << 1) | bit0_at_2_7;
+        
+    //PPU backgound layer: 64x60 tiles (512 x 480 pixels), lower-left pixel can positioned anywhere
+        
+    //PPU sprite: positions (x,y) place the bottom-left, sprite index is an index into the tile table
+    //only draw 64 sprite a time, other should move outside screen
+        
+        
     }
     
 }
@@ -104,7 +117,6 @@ void DogMode::update(float elapsed){
     
     
     //cat:
-    //TODO: cat move with player action
     float choice;
     for(int i = 0; cat_num; i++){
         choice = (mt() / float(mt.max())) * 4.0f;   //random choose up, down, left, right
@@ -232,6 +244,17 @@ void DogMode::update(float elapsed){
             cats[i].x = -scene_radius.x + cat_radius.x;
         }
     }
+    
+    
+    //--------floor color update-----
+    if (left.pressed || right.pressed || up.pressed || down.pressed){
+        for(int i = 0; i < floorMap.size(); i++){
+            for(int j = 0; j < floorMap[0].size(); j++){
+                floorMap[i][j] *= -1;   //only swap pink and green floor, rock not change
+            }
+        }
+    }
+    
 }
 
 void DogMode::draw(glm::uvec2 const &drawable_size){

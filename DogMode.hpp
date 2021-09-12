@@ -40,7 +40,7 @@ struct DogMode : Mode {
 
     //player state:
     glm::vec2 player_at = glm::vec2(2.0f, 2.0f);    //location of dog head // TODO: set player initial position
-    std::string floor_color = "pink";               //floor color under player, pink or green
+    //std::string floor_color = "pink";               //floor color under player, pink or green //TODO: not used
     bool hitCat = false;                            //lose if hit cat
     bool reach_end = false;                         //whether reach destination
     
@@ -52,6 +52,7 @@ struct DogMode : Mode {
     std::vector< glm::vec2 > cats;          //cat positions
     
     //floor state:
+    std::vector<std::vector<int> > floorMap;             //floor map update with player input, 0: rock, -1: green, 1: rock
     glm::vec2 destination = glm::vec2(248.0f, 232.0f);       //location of destination //TODO: may need to tune
     
     //rock positions:
