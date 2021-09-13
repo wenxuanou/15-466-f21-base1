@@ -125,8 +125,21 @@ GAME_NAMES =
 	GL
 	;
 
+ASSET_PIP_NAMES =
+    asset_proc
+    load_save_png
+    data_path
+    gl_compile_program
+    GL
+    ;
+
 LOCATE_TARGET = objs ; #put objects in 'objs' directory
 Objects $(GAME_NAMES:S=.cpp) ;
 
 LOCATE_TARGET = dist ; #put main in 'dist' directory
 MainFromObjects game : $(GAME_NAMES:S=$(SUFOBJ)) ;
+
+Objects asset_proc.cpp ;
+LOCATE_TARGET = asset_pip ; #optional
+MainFromObjects asset_proc : $(ASSET_PIP_NAMES:S=$(SUFOBJ)) ;
+

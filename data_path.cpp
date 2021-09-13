@@ -63,6 +63,7 @@ std::string data_path(std::string const &suffix) {
 }
 
 // From Rktcr; to be used eventually!
+/*
 static std::string make_user_dir(std::string const &app_name) {
 	std::string ret = "";
 	#if defined(_WIN32)
@@ -120,7 +121,7 @@ static std::string make_user_dir(std::string const &app_name) {
 }
 
 std::string user_path(std::string const &suffix) {
-	static std::string path = make_user_dir( ... TODO ... );
+	static std::string path = make_user_dir(suffix);
 	return path + '/' + suffix;
 }
-
+*/
