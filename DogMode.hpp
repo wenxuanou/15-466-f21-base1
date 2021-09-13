@@ -52,7 +52,8 @@ struct DogMode : Mode {
     std::vector< glm::vec2 > cats;          //cat positions
     
     //floor state:
-    std::vector<std::vector<int> > floorMap;             //floor map update with player input, 0: rock, -1: green, 1: rock
+    const glm::vec2 floorMap_radius = glm::vec2(16.0f, 15.0f);  //16*15 floor blocks to fill up screen
+    int floorMap[16][15] = {1};            //floor map update with player input, 0: rock, -1: green, 1: pink
     glm::vec2 destination = glm::vec2(248.0f, 232.0f);       //location of destination //TODO: may need to tune
     
     //rock positions:

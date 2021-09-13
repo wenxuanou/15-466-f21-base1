@@ -14,11 +14,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <random>
+#include <math.h>
 
 
 DogMode::DogMode(){
-    //TODO: implement this
-    {//---------load asset-------------
+    //---------load asset-------------
     //PPU screen: 256x240, (0,0) at lower left
     //PPU Palette table: 8 palatte; Palatte: 2-bit indexed, RGBA
     
@@ -33,9 +33,36 @@ DogMode::DogMode(){
     //PPU sprite: positions (x,y) place the bottom-left, sprite index is an index into the tile table
     //only draw 64 sprite a time, other should move outside screen
         
-        
+    
+    //----------Initialize floor map--------------
+    //initialize floor color
+    //screen is 256 * 240, floor block is 16*16, so map is 16*15
+    for(int i = 0; i < floorMap_radius.x; i++){
+        for(int j = 0; j < floorMap_radius.y; j++){
+            floorMap[i][j] -= 2 * ((i+j) % 2);      //make evey even block change color
+        }
     }
     
+    //initialize rock position
+    for(int count = 0; count < rock_num; count++){
+        float i = floor( (mt() / float(mt.max())) * 240.0f);    //TODO: check if need to shift by 8 pixel
+        float j = floor( (mt() / float(mt.max())) * 224.0f);
+        rocks.push_back( glm::vec2(i, j) );
+    }
+    
+    //initialize cat position
+    for(int count = 0; count < cat_num; count++){
+        float i = floor( (mt() / float(mt.max())) * 240.0f + 2.0f);     //little shift towards center
+        float j = floor( (mt() / float(mt.max())) * 224.0f + 2.0f);
+        cats.push_back( glm::vec2(i,j) );
+    }
+    
+    //finalize floor map
+    for(int count = 0; count < rock_num; count++){
+        int i = (int)floor(rocks[i].x / 16.0f);      //convert to floormap index
+        int j = (int)floor(rocks[i].y / 16.0f);
+        floorMap[i][j] = 0;
+    }
 }
 
 DogMode::~DogMode(){
@@ -64,21 +91,6 @@ bool DogMode::handle_event(SDL_Event const &, glm::uvec2 const &window_size){
             return true;
         }
         move_tick = 0;  //reset move cd
-        
-    } else if (evt.type == SDL_KEYUP) {
-        if (evt.key.keysym.sym == SDLK_LEFT) {
-            left.pressed = false;
-            return true;
-        } else if (evt.key.keysym.sym == SDLK_RIGHT) {
-            right.pressed = false;
-            return true;
-        } else if (evt.key.keysym.sym == SDLK_UP) {
-            up.pressed = false;
-            return true;
-        } else if (evt.key.keysym.sym == SDLK_DOWN) {
-            down.pressed = false;
-            return true;
-        }
     }
     
     //TODO: handle game over event here
@@ -97,7 +109,6 @@ void DogMode::update(float elapsed){
     static std::mt19937 mt;     //mersenne twister pseudo-random number generator
     
     //--------game character movement--------
-    //TODO: restrict only move constant step a time, with cool down of floor color change
     constexpr float MoveStep = 16.0f;        // 1.0f is 1 pixel //TODO: need to determine step size to fit floor block
     constexpr float AnimationTime = 2.0f;      // TODO: produce moving animation in time interval, may equal to move_cd
     
@@ -106,30 +117,38 @@ void DogMode::update(float elapsed){
     if (right.pressed) player_at.x += MoveStep;
     if (down.pressed) player_at.y -= MoveStep;
     if (up.pressed) player_at.y += MoveStep;
-    //reset button press counters:
+    //reset button press counters:      //TODO: not use
     left.downs = 0;
     right.downs = 0;
     up.downs = 0;
     down.downs = 0;
-    //TODO: check whether is step movement
+    
+    //cat:
+    //cat move only when player moves
+    if(left.pressed || right.pressed || down.pressed || up.pressed){
+        float choice;
+        for(int i = 0; cat_num; i++){
+            choice = (mt() / float(mt.max())) * 4.0f;   //random choose up, down, left, right
+            if(choice <= 1.0f){
+                cats[i].y += MoveStep;  //up
+            }else if(choice <= 2.0f){
+                cats[i].y -= MoveStep;  //down
+            }else if(choice <= 3.0f){
+                cats[i].x += MoveStep;  //right
+            }else{
+                cats[i].x -= MoveStep;  //left
+            }
+        }
+    }
+    
     //update timing
     move_tick += elapsed;
     
-    
-    //cat:
-    float choice;
-    for(int i = 0; cat_num; i++){
-        choice = (mt() / float(mt.max())) * 4.0f;   //random choose up, down, left, right
-        if(choice <= 1.0f){
-            cats[i].y += MoveStep;  //up
-        }else if(choice <= 2.0f){
-            cats[i].y -= MoveStep;  //down
-        }else if(choice <= 3.0f){
-            cats[i].x += MoveStep;  //right
-        }else{
-            cats[i].x -= MoveStep;  //left
-        }
-    }
+    //reset press state
+    left.pressed = false;
+    right.pressed = false;
+    down.pressed = false;
+    up.pressed = false;
     
     
     
