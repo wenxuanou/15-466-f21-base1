@@ -1,8 +1,8 @@
-# (TODO: your game's title)
+# Dog Meets Cat
 
-Author: (TODO: your name)
+Author: Wenxuan Ou
 
-Design: (TODO: In two sentences or fewer, describe what is new and interesting about your game.)
+Design: Floor changes color when you are moving. The cats will also move with you!
 
 Screen Shot:
 
@@ -10,13 +10,15 @@ Screen Shot:
 
 How Your Asset Pipeline Works:
 
+The assets are created using GIMP. Then they are converted from png to .tile and .palette by asset_proc.cpp. Tiles and palette will then be read by PPU and rendered in game.
+
 (TODO: describe the steps in your asset pipeline, from source files to tiles/backgrounds/whatever you upload to the PPU466.)
 
 How To Play:
 
-(TODO: describe the controls and (if needed) goals/strategy.)
+Try to reach destination and avoid those sneaky cats!
 
-Sources: (TODO: list a source URL for any assets you did not create yourself. Make sure you have a license for the asset.)
+Sources: All assets are created by myself.
 
 This game was built with [NEST](NEST.md).
 
