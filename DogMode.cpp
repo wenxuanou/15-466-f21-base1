@@ -32,7 +32,9 @@ DogMode::DogMode(){
         
     //PPU sprite: positions (x,y) place the bottom-left, sprite index is an index into the tile table
     //only draw 64 sprite a time, other should move outside screen
-        
+    
+    bool loaded = load_asset();
+    assert(loaded);
     
     //----------Initialize floor map--------------
     //initialize floor color
@@ -68,6 +70,55 @@ DogMode::DogMode(){
 DogMode::~DogMode(){
     
 }
+
+bool DogMode::load_asset(){
+    //load tiles
+    assert(tile_paths.size() <= ppu.tile_table.size());                        //ensure enough room to load tiles
+    assert(palette_paths.size() <= ppu.palette_table.size());                  //ensure enough room to read palette
+    
+    //0~1: cat; 2~3: dog; 4~5: rock; 6~9: greenfloor; 10~13: pink floor
+    for(int count = 0; count < tile_paths.size(); count++){
+        std::filebuf fb_tile;
+        std::string magic;
+        std::vector< uint8_t > tile;
+        
+        fb_tile.open(tile_paths[count], std::ios::in | std::ios::binary);      //TODO: check if need to change to binary mode
+        std::istream is_tile(&fb_tile);
+        
+        read_chunk(is_tile, magic, &tile);                                     //tile: 16 8-bit number, include bit 0 and bit 1
+        
+        for(uint8_t i = 0; i < 8; i++){
+            ppu.tile_table[count].bit0[i] = tile[i];
+            ppu.tile_table[count].bit1[i] = tile[i + 8];
+        }
+        
+        //check size
+        assert(ppu.tile_table[count].bit0.size() == ppu.tile_table[count].bit1.size() && ppu.tile_table[0].bit0.size() == 8);
+        
+        fb_tile.close();
+    }
+    
+    //load palette
+    //0: cat; 1: dog; 2: rock; 3: green; 4: pink
+    for(int count = 0; count < palette_paths.size(); count++){
+        std::filebuf fb_palette;
+        std::string magic;
+        std::vector< glm::u8vec4 > palette;
+        
+        fb_palette.open(palette_paths[count], std::ios::in | std::ios::binary);
+        std::istream is_palette(&fb_palette);
+        
+        read_chunk(is_palette, magic, &palette);                              //palette: 4 
+        
+        // tile bit is selecting color from the 4 stored in palette table element
+        ppu.palette_table[count][1] = palette[0];           //when only bit 0 is 1: 01
+        ppu.palette_table[count][2] = palette[1];           //when only bit 1 is 1: 10
+        
+        fb_palette.close();
+    }
+    
+}
+
 
 bool DogMode::handle_event(SDL_Event const &, glm::uvec2 const &window_size){
     //key events
@@ -281,21 +332,134 @@ void DogMode::draw(glm::uvec2 const &drawable_size){
     
     //--- set ppu state based on game state ---
     
-    //recompute tilemap
+    //tile:
+    //0~1: cat; 2~3: dog; 4~5: rock; 6~9: greenfloor; 10~13: pink floor
+    //palette:
+    //0: cat; 1: dog; 2: rock; 3: green; 4: pink
+    
+    
+    //background
+    ppu.background_color = glm::u8vec4(0xff, 0xff, 0xff, 0xff);     //all white background
     
     
     //player sprite
+    //head
+    ppu.sprites[0].x = int32_t(player_at.x);
+    ppu.sprites[0].y = int32_t(player_at.y);
+    ppu.sprites[0].index = 2;                               //tile table index
+    ppu.sprites[0].attributes = 1;                          //palette table index
+    //tail
+    ppu.sprites[1].x = int32_t(player_at.x + 8.0f);         //tail right shift 8 pixel. tail at the right
+    ppu.sprites[1].y = int32_t(player_at.y);
+    ppu.sprites[1].index = 3;
+    ppu.sprites[1].attributes = 1;
+    
+    //cat sprite, cat_num: 5
+    for(int i = 0; i < cat_num; i++){
+        //head
+        ppu.sprites[i + 2].x = int32_t(cats[i].x + 8.0f);   //head right shift 8 pixel, head at the right
+        ppu.sprites[i + 2].y = int32_t(cats[i].y);
+        ppu.sprites[i + 2].index = 0;                      //tile table index
+        ppu.sprites[i + 2].attributes = 0;                 //palette table index
+        //tail
+        ppu.sprites[i*2 + 2].x = int32_t(cats[i].x);
+        ppu.sprites[i*2 + 2].y = int32_t(cats[i].y);
+        ppu.sprites[i*2 + 2].index = 1;                      //tile table index
+        ppu.sprites[i*2+ 2].attributes = 0;                 //palette table index
+    }
+    //64 - 5*2 - 2 = 52 sprites left, used 12 sprites
     
     
-    //cat sprite
+    //rock, rock_num: 3
+    for(int i = 0; i < rock_num; i++){
+        //11
+        ppu.sprites[i + 12].x = int32_t(rocks[i].x);   //head right shift 8 pixel, head at the right
+        ppu.sprites[i + 12].y = int32_t(rocks[i].y);
+        ppu.sprites[i + 12].index = 4;                      //tile table index
+        ppu.sprites[i + 12].attributes = 2;                 //palette table index
+        //12
+        ppu.sprites[i*2 + 12].x = int32_t(rocks[i].x + 8.0f);   //head right shift 8 pixel, head at the right
+        ppu.sprites[i*2 + 12].y = int32_t(rocks[i].y);
+        ppu.sprites[i*2 + 12].index = 5;                      //tile table index
+        ppu.sprites[i*2 + 12].attributes = 2;                 //palette table index
+        //21
+        ppu.sprites[i*3 + 12].x = int32_t(rocks[i].x);   //head right shift 8 pixel, head at the right
+        ppu.sprites[i*3 + 12].y = int32_t(rocks[i].y + 8.0f);
+        ppu.sprites[i*3 + 12].index = 4;                      //tile table index
+        ppu.sprites[i*3 + 12].attributes = 2;                 //palette table index
+        //22
+        ppu.sprites[i*4 + 12].x = int32_t(rocks[i].x + 8.0f);   //head right shift 8 pixel, head at the right
+        ppu.sprites[i*4 + 12].y = int32_t(rocks[i].y + 8.0f);
+        ppu.sprites[i*4 + 12].index = 5;                      //tile table index
+        ppu.sprites[i*4 + 12].attributes = 2;                 //palette table index
+    }
+    //52 - 3*4 = 40 sprites left, used 24 sprites
     
     
-    //floor
+    //floor, not enough sprites
+    int count = 0;
+    while(count < 10){
+        float x = (mt() / float(mt.max())) * 240.0f;
+        float y = (mt() / float(mt.max())) * 224.0f;
+        
+        int i = floor(x / 16);
+        int j = floor(y / 16);
+        
+        
+        if(floorMap[i][j] == -1){
+            //green
+            
+            //11
+            ppu.sprites[count + 24].x = int32_t(x);   //head right shift 8 pixel, head at the right
+            ppu.sprites[count + 24].y = int32_t(y);
+            ppu.sprites[count + 24].index = 6;                      //tile table index
+            ppu.sprites[count + 24].attributes = 3;                 //palette table index
+            //12
+            ppu.sprites[count*2 + 24].x = int32_t(x + 8.0f);   //head right shift 8 pixel, head at the right
+            ppu.sprites[count*2 + 24].y = int32_t(y);
+            ppu.sprites[count*2 + 24].index = 7;                      //tile table index
+            ppu.sprites[count*2 + 24].attributes = 3;                 //palette table index
+            //21
+            ppu.sprites[count*3 + 24].x = int32_t(x);   //head right shift 8 pixel, head at the right
+            ppu.sprites[count*3 + 24].y = int32_t(y + 8.0f);
+            ppu.sprites[count*3 + 24].index = 8;                      //tile table index
+            ppu.sprites[count*3 + 24].attributes = 3;                 //palette table index
+            //22
+            ppu.sprites[count*4 + 24].x = int32_t(x + 8.0f);   //head right shift 8 pixel, head at the right
+            ppu.sprites[count*4 + 24].y = int32_t(y + 8.0f);
+            ppu.sprites[count*4 + 24].index = 9;                      //tile table index
+            ppu.sprites[count*4 + 24].attributes = 3;                 //palette table index
+            
+        }else if(floorMap[i][j] == 1){
+            //pink
+            
+            //11
+            ppu.sprites[count + 24].x = int32_t(x);   //head right shift 8 pixel, head at the right
+            ppu.sprites[count + 24].y = int32_t(y);
+            ppu.sprites[count + 24].index = 10;                      //tile table index
+            ppu.sprites[count + 24].attributes = 4;                 //palette table index
+            //12
+            ppu.sprites[count*2 + 24].x = int32_t(x + 8.0f);   //head right shift 8 pixel, head at the right
+            ppu.sprites[count*2 + 24].y = int32_t(y);
+            ppu.sprites[count*2 + 24].index = 11;                      //tile table index
+            ppu.sprites[count*2 + 24].attributes = 4;                 //palette table index
+            //21
+            ppu.sprites[count*3 + 24].x = int32_t(x);   //head right shift 8 pixel, head at the right
+            ppu.sprites[count*3 + 24].y = int32_t(y + 8.0f);
+            ppu.sprites[count*3 + 24].index = 12;                      //tile table index
+            ppu.sprites[count*3 + 24].attributes = 4;                 //palette table index
+            //22
+            ppu.sprites[count*4 + 24].x = int32_t(x + 8.0f);   //head right shift 8 pixel, head at the right
+            ppu.sprites[count*4 + 24].y = int32_t(y + 8.0f);
+            ppu.sprites[count*4 + 24].index = 13;                      //tile table index
+            ppu.sprites[count*4 + 24].attributes = 4;                 //palette table index
+            
+        }
+        
+        count++;
+    }
     
-    
-    //rock
-    
-    
+
     
     //--- actually draw ---
     ppu.draw(drawable_size);

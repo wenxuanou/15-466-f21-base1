@@ -7,11 +7,15 @@
 
 #include "PPU466.hpp"
 #include "Mode.hpp"
+#include "read_write_chunk.hpp"
+#include "data_path.hpp"
 
 #include <glm/glm.hpp>
 
 #include <vector>
 #include <deque>
+#include <fstream>
+#include <iostream>
 
 struct DogMode : Mode {
     DogMode();
@@ -57,12 +61,38 @@ struct DogMode : Mode {
     glm::vec2 destination = glm::vec2(248.0f, 232.0f);       //location of destination //TODO: may need to tune
     
     //rock positions:
-    const int rock_num = 10;                // number of rocks
-    std::vector< glm::vec2 > rocks;       // position of obstacles
+    const int rock_num = 3;                //number of rocks
+    std::vector< glm::vec2 > rocks;         //position of obstacles
     
     
     //----- drawing handled by PPU466 -----
     PPU466 ppu;
     
     
+    //----- asset loading ---------
+    //TODO: implement this part
+    bool load_asset();          //false if fail to load
+    
+    //0~1: cat; 2~3: dog; 4~5: rock; 6~9: greenfloor; 10~13: pink floor
+    const std::vector<std::string> tile_paths = {"assets/cat_head.tile",
+                                                "assets/cat_tail.tile",
+                                                "assets/dog_head.tile",
+                                                "assets/dog_tail.tile",
+                                                "assets/rock_1.tile",
+                                                "assets/rock_2.tile",
+                                                "assets/greenfloor_1-1.tile",
+                                                "assets/greenfloor_1-2.tile",
+                                                "assets/greenfloor_2-1.tile",
+                                                "assets/greenfloor_2-2.tile",
+                                                "assets/pinkfloor_1-1.tile",
+                                                "assets/pinkfloor_1-2.tile",
+                                                "assets/pinkfloor_2-1.tile",
+                                                "assets/pinkfloor_2-2.tile" };
+    
+    //0: cat; 1: dog; 2: rock; 3: green; 4: pink
+    const std::vector<std::string> palette_paths = {"assets/cat_head.palette",
+                                                    "assets/dog_head.palette",
+                                                    "assets/rock_1.palette",
+                                                    "assets/greenfloor_1-1.palette",
+                                                    "assets/pinkfloor_1-1.palette",};   //not read repeated palette
 };

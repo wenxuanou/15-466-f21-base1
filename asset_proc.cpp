@@ -187,12 +187,12 @@ int main(){
         
         
         //------------save to disk------------------
-        fb_tile.open(tile_paths[i], std::ios::out);      //in binary mode
+        fb_tile.open(tile_paths[i], std::ios::out | std::ios::binary);      //in binary mode
         std::ostream os_tile(&fb_tile);
         write_chunk< uint8_t >(magic, tile, &os_tile);
         fb_tile.close();
         
-        fb_palette.open(palette_paths[i], std::ios::out);
+        fb_palette.open(palette_paths[i], std::ios::out | std::ios::binary);
         std::ostream os_palette(&fb_palette);
         write_chunk< glm::u8vec4 >(magic, palette, &os_palette);
         fb_palette.close();

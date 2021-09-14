@@ -193,8 +193,8 @@ void PlayMode::draw(glm::uvec2 const &drawable_size) {
 	//player sprite:
 	ppu.sprites[0].x = int32_t(player_at.x);
 	ppu.sprites[0].y = int32_t(player_at.y);
-	ppu.sprites[0].index = 32;
-	ppu.sprites[0].attributes = 7;
+	ppu.sprites[0].index = 32;                      //tile table index
+	ppu.sprites[0].attributes = 7;                  //palette table index
 
 	//some other misc sprites:
 	for (uint32_t i = 1; i < 63; ++i) {
