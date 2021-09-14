@@ -36,7 +36,7 @@ struct DogMode : Mode {
     
     //PPU screen is 256x240 with (0,0) at lower left
     glm::vec2 scene_radius = glm::vec2(256.0f, 240.0f);        //shape of scene //TODO: need to figure out exact size in pixel
-    glm::vec2 player_radius = glm::vec2(8.0f, 4.0f);       //dog size: 2*1 sprite, 16*8 pixel
+    glm::vec2 player_radius = glm::vec2(0.0f, 0.0f);       //dog size: 2*1 sprite, 16*8 pixel
     glm::vec2 cat_radius = glm::vec2(8.0f, 4.0f);          //cat size: 2*1 sprite, 16*8 pixel
     glm::vec2 rock_radius = glm::vec2(8.0f, 8.0f);         //rock size: 2*2 sprite, 16*16 pixel
     glm::vec2 floor_radius = glm::vec2(8.0f, 8.0f);        //floor size: 2*2 sprite, 16*16 pixel
@@ -87,12 +87,16 @@ struct DogMode : Mode {
                                                 "../asset_pip/assets/pinkfloor_1-1.tile",
                                                 "../asset_pip/assets/pinkfloor_1-2.tile",
                                                 "../asset_pip/assets/pinkfloor_2-1.tile",
-                                                "../asset_pip/assets/pinkfloor_2-2.tile" };
+                                                "../asset_pip/assets/pinkfloor_2-2.tile"
+        
+    };
     
     //0: cat; 1: dog; 2: rock; 3: green; 4: pink
     const std::vector<std::string> palette_paths = {"../asset_pip/assets/cat_head.palette",
                                                     "../asset_pip/assets/dog_head.palette",
                                                     "../asset_pip/assets/rock_1.palette",
                                                     "../asset_pip/assets/greenfloor_1-1.palette",
-                                                    "../asset_pip/assets/pinkfloor_1-1.palette"};   //not read repeated palette
+                                                    "../asset_pip/assets/pinkfloor_1-1.palette"
+        
+    };   //not read repeated palette
 };
