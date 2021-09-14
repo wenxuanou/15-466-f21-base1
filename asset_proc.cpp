@@ -93,9 +93,9 @@ int main(){
         
         glm::uvec2 imgSize;
         std::vector< glm::u8vec4 > imgData;
-        load_png(png_paths[i], &imgSize, &imgData, UpperLeftOrigin);    //imgData: 64*1 vector
+        load_png(png_paths[i], &imgSize, &imgData, LowerLeftOrigin);    //imgData: 64*1 vector
         
-        std::string magic;
+        std::string magic = "0000";
         
         //construct palette
         std::vector< glm::u8vec4 > palette(4, glm::u8vec4(0x00, 0x00, 0x00, 0x00)); //4 u8vec4 vector, RGBA in hex
@@ -105,60 +105,74 @@ int main(){
                 palette[0] = imgData[1];    //black
                 palette[1] = imgData[26];   //red
                 magic = "cath";
+                break;
             case 1:     //cat tail
                 palette[0] = imgData[0];    //black
                 palette[1] = imgData[31];   //red
                 magic = "catt";
+                break;
             case 2:     //dog head
                 palette[0] = imgData[4];    //yellow
                 palette[1] = imgData[32];   //black
                 magic = "dogh";
+                break;
             case 3:     //dog tail
                 palette[0] = imgData[24];   //red
                 palette[1] = imgData[25];   //yellow
                 magic = "dogt";
+                break;
             case 4:     //rock 1
                 palette[0] = imgData[12];   //black
                 palette[1] = imgData[20];   //grey
 //                palette[2] = imgData[29];   //lighter grey        //TODO: third color
                 magic = "roc1";
+                break;
             case 5:     //rock 2
                 palette[0] = imgData[40];   //black
                 palette[1] = imgData[41];   //grey
 //                palette[2] = imgData[44];   //lighter grey
                 magic = "roc2";
+                break;
             case 6:     //greenfloor 1-1
                 palette[0] = imgData[9];    //green
                 palette[1] = imgData[13];   //red
                 magic = "gf11";
+                break;
             case 7:     //greenfloor 1-2
                 palette[0] = imgData[8];    //green
                 palette[1] = imgData[40];   //red
                 magic = "gf12";
+                break;
             case 8:     //greenfloor 2-1
                 palette[0] = imgData[1];    //green
                 palette[1] = imgData[2];    //red
                 magic = "gf21";
+                break;
             case 9:     //greenfloor 2-2
                 palette[0] = imgData[0];    //green
                 palette[1] = imgData[4];    //red
                 magic = "gf22";
+                break;
             case 10:    //pinkfloor 1-1
                 palette[0] = imgData[9];    //pink
                 palette[1] = imgData[15];   //blue
                 magic = "pf11";
+                break;
             case 11:    //pinkfloor 1-2
                 palette[0] = imgData[9];    //pink
                 palette[1] = imgData[8];    //blue
                 magic = "pf12";
+                break;
             case 12:    //pinkfloor 2-1
                 palette[0] = imgData[1];    //pink
                 palette[1] = imgData[2];    //blue
                 magic = "pf21";
+                break;
             case 13:    //pinkfloor 2-2
                 palette[0] = imgData[0];    //pink
                 palette[1] = imgData[5];    //blue
                 magic = "pf22";
+                break;
         }
         
         //construct tile
@@ -192,10 +206,15 @@ int main(){
         write_chunk< uint8_t >(magic, tile, &os_tile);
         fb_tile.close();
         
+//        std::cout << "pallete path: " << data_path(palette_paths[i]) << std::endl;
+//        std::cout << "i: " << i << " png_paths.size(): " << png_paths.size() << " magic: " << magic << std::endl;    //TODO: for debug
+        
         fb_palette.open(palette_paths[i], std::ios::out | std::ios::binary);
         std::ostream os_palette(&fb_palette);
         write_chunk< glm::u8vec4 >(magic, palette, &os_palette);
         fb_palette.close();
+        
+        
     }
     
     

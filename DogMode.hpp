@@ -57,7 +57,7 @@ struct DogMode : Mode {
     
     //floor state:
     const glm::vec2 floorMap_radius = glm::vec2(16.0f, 15.0f);  //16*15 floor blocks to fill up screen
-    int floorMap[16][15] = {1};            //floor map update with player input, 0: rock, -1: green, 1: pink
+    int floorMap[16][15];            //floor map update with player input, 0: rock, -1: green, 1: pink
     glm::vec2 destination = glm::vec2(248.0f, 232.0f);       //location of destination //TODO: may need to tune
     
     //rock positions:
@@ -74,25 +74,25 @@ struct DogMode : Mode {
     bool load_asset();          //false if fail to load
     
     //0~1: cat; 2~3: dog; 4~5: rock; 6~9: greenfloor; 10~13: pink floor
-    const std::vector<std::string> tile_paths = {"assets/cat_head.tile",
-                                                "assets/cat_tail.tile",
-                                                "assets/dog_head.tile",
-                                                "assets/dog_tail.tile",
-                                                "assets/rock_1.tile",
-                                                "assets/rock_2.tile",
-                                                "assets/greenfloor_1-1.tile",
-                                                "assets/greenfloor_1-2.tile",
-                                                "assets/greenfloor_2-1.tile",
-                                                "assets/greenfloor_2-2.tile",
-                                                "assets/pinkfloor_1-1.tile",
-                                                "assets/pinkfloor_1-2.tile",
-                                                "assets/pinkfloor_2-1.tile",
-                                                "assets/pinkfloor_2-2.tile" };
+    const std::vector<std::string> tile_paths = {"../asset_pip/assets/cat_head.tile",
+                                                "../asset_pip/assets/cat_tail.tile",
+                                                "../asset_pip/assets/dog_head.tile",
+                                                "../asset_pip/assets/dog_tail.tile",
+                                                "../asset_pip/assets/rock_1.tile",
+                                                "../asset_pip/assets/rock_2.tile",
+                                                "../asset_pip/assets/greenfloor_1-1.tile",
+                                                "../asset_pip/assets/greenfloor_1-2.tile",
+                                                "../asset_pip/assets/greenfloor_2-1.tile",
+                                                "../asset_pip/assets/greenfloor_2-2.tile",
+                                                "../asset_pip/assets/pinkfloor_1-1.tile",
+                                                "../asset_pip/assets/pinkfloor_1-2.tile",
+                                                "../asset_pip/assets/pinkfloor_2-1.tile",
+                                                "../asset_pip/assets/pinkfloor_2-2.tile" };
     
     //0: cat; 1: dog; 2: rock; 3: green; 4: pink
-    const std::vector<std::string> palette_paths = {"assets/cat_head.palette",
-                                                    "assets/dog_head.palette",
-                                                    "assets/rock_1.palette",
-                                                    "assets/greenfloor_1-1.palette",
-                                                    "assets/pinkfloor_1-1.palette",};   //not read repeated palette
+    const std::vector<std::string> palette_paths = {"../asset_pip/assets/cat_head.palette",
+                                                    "../asset_pip/assets/dog_head.palette",
+                                                    "../asset_pip/assets/rock_1.palette",
+                                                    "../asset_pip/assets/greenfloor_1-1.palette",
+                                                    "../asset_pip/assets/pinkfloor_1-1.palette"};   //not read repeated palette
 };

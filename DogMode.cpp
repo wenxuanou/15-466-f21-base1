@@ -18,6 +18,9 @@
 
 
 DogMode::DogMode(){
+    
+    static std::mt19937 mt;     //mersenne twister pseudo-random number generator
+    
     //---------load asset-------------
     //PPU screen: 256x240, (0,0) at lower left
     //PPU Palette table: 8 palatte; Palatte: 2-bit indexed, RGBA
@@ -33,6 +36,8 @@ DogMode::DogMode(){
     //PPU sprite: positions (x,y) place the bottom-left, sprite index is an index into the tile table
     //only draw 64 sprite a time, other should move outside screen
     
+    std::cout << "about to load" << std::endl;
+    
     bool loaded = load_asset();
     assert(loaded);
     
@@ -41,7 +46,7 @@ DogMode::DogMode(){
     //screen is 256 * 240, floor block is 16*16, so map is 16*15
     for(int i = 0; i < floorMap_radius.x; i++){
         for(int j = 0; j < floorMap_radius.y; j++){
-            floorMap[i][j] -= 2 * ((i+j) % 2);      //make evey even block change color
+            floorMap[i][j] = 1 - 2 * ((i+j) % 2);      //make evey even/odd block change color
         }
     }
     
@@ -61,8 +66,8 @@ DogMode::DogMode(){
     
     //finalize floor map
     for(int count = 0; count < rock_num; count++){
-        int i = (int)floor(rocks[i].x / 16.0f);      //convert to floormap index
-        int j = (int)floor(rocks[i].y / 16.0f);
+        int i = (int)floor(rocks[count].x / 16.0f);      //convert to floormap index
+        int j = (int)floor(rocks[count].y / 16.0f);
         floorMap[i][j] = 0;
     }
 }
@@ -72,6 +77,8 @@ DogMode::~DogMode(){
 }
 
 bool DogMode::load_asset(){
+    //return false if failed to load
+    
     //load tiles
     assert(tile_paths.size() <= ppu.tile_table.size());                        //ensure enough room to load tiles
     assert(palette_paths.size() <= ppu.palette_table.size());                  //ensure enough room to read palette
@@ -82,7 +89,28 @@ bool DogMode::load_asset(){
         std::string magic;
         std::vector< uint8_t > tile;
         
-        fb_tile.open(tile_paths[count], std::ios::in | std::ios::binary);      //TODO: check if need to change to binary mode
+        std::cout << "tile path: " << data_path(tile_paths[count]) << std::endl;    //TODO: for debug
+        
+        //select magic number
+        switch(count){
+            case 0: magic = "cath"; break;
+            case 1: magic = "catt"; break;
+            case 2: magic = "dogh"; break;
+            case 3: magic = "dogt"; break;
+            case 4: magic = "roc1"; break;
+            case 5: magic = "roc2"; break;
+            case 6: magic = "gf11"; break;
+            case 7: magic = "gf12"; break;
+            case 8: magic = "gf21"; break;
+            case 9: magic = "gf22"; break;
+            case 10: magic = "pf11"; break;
+            case 11: magic = "pf12"; break;
+            case 12: magic = "pf21"; break;
+            case 13: magic = "pf22"; break;
+        }
+        
+        
+        fb_tile.open(data_path(tile_paths[count]), std::ios::in | std::ios::binary);      //TODO: check if need to change to binary mode
         std::istream is_tile(&fb_tile);
         
         read_chunk(is_tile, magic, &tile);                                     //tile: 16 8-bit number, include bit 0 and bit 1
@@ -105,7 +133,18 @@ bool DogMode::load_asset(){
         std::string magic;
         std::vector< glm::u8vec4 > palette;
         
-        fb_palette.open(palette_paths[count], std::ios::in | std::ios::binary);
+        std::cout << "pallete path: " << data_path(palette_paths[count]) << std::endl;    //TODO: for debug
+
+        //select magic number
+        switch(count){
+            case 0: magic = "cath"; break;
+            case 1: magic = "dogh"; break;
+            case 2: magic = "roc1"; break;
+            case 3: magic = "gf11"; break;
+            case 4: magic = "pf11"; break;
+        }
+        
+        fb_palette.open(data_path(palette_paths[count]), std::ios::in | std::ios::binary);
         std::istream is_palette(&fb_palette);
         
         read_chunk(is_palette, magic, &palette);                              //palette: 4 
@@ -117,10 +156,11 @@ bool DogMode::load_asset(){
         fb_palette.close();
     }
     
+    return true;    //TODO: add a load fail detection
 }
 
 
-bool DogMode::handle_event(SDL_Event const &, glm::uvec2 const &window_size){
+bool DogMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size){
     //key events
     //TODO: change strategy, limit player move one block a time
     if (evt.type == SDL_KEYDOWN && move_tick > move_cd) {
@@ -144,16 +184,18 @@ bool DogMode::handle_event(SDL_Event const &, glm::uvec2 const &window_size){
         move_tick = 0;  //reset move cd
     }
     
-    //TODO: handle game over event here
-    if(hitCat){
-        //TODO: print something
-        continue;
-    }
+//    //TODO: handle game over event here
+//    if(hitCat){
+//        //TODO: print something
+//        return false;
+//    }
+//
+//    if(reach_end){
+//        //TODO: print something
+//        return false;
+//    }
     
-    if(reach_end){
-        //TODO: print something
-        continue;
-    }
+    return false;
 }
 
 void DogMode::update(float elapsed){
@@ -161,7 +203,7 @@ void DogMode::update(float elapsed){
     
     //--------game character movement--------
     constexpr float MoveStep = 16.0f;        // 1.0f is 1 pixel //TODO: need to determine step size to fit floor block
-    constexpr float AnimationTime = 2.0f;      // TODO: produce moving animation in time interval, may equal to move_cd
+//    constexpr float AnimationTime = 2.0f;      // TODO: produce moving animation in time interval, may equal to move_cd
     
     //player:
     if (left.pressed) player_at.x -= MoveStep;
@@ -223,8 +265,8 @@ void DogMode::update(float elapsed){
     //player vs rocks:
     for(int i = 0; i < rock_num; i++){
         //compute area of overlap:
-        glm::vec2 min = glm::max(rocks[i] - rocks_radius, player_at - player_radius);
-        glm::vec2 max = glm::min(rocks[i] + rocks_radius, player_at + player_radius);
+        glm::vec2 min = glm::max(rocks[i] - rock_radius, player_at - player_radius);
+        glm::vec2 max = glm::min(rocks[i] + rock_radius, player_at + player_radius);
         
         //if no overlap, no collision:
         if (min.x > max.x || min.y > max.y) continue;
@@ -233,20 +275,20 @@ void DogMode::update(float elapsed){
             //wider overlap in x => restrict movement in y direction:
             if (player_at.y > rocks[i].y) {
                 //player at top
-                player_at.y = rocks[i].y + rocks_radius.y + player_radius.y;
+                player_at.y = rocks[i].y + rock_radius.y + player_radius.y;
             } else {
                 //player at bottom
-                player_at.y = rocks[i].y - rocks_radius.y - player_radius.y;
+                player_at.y = rocks[i].y - rock_radius.y - player_radius.y;
             }
             
         }else{
             //wider overlap in y => restrict movement in x direction:
             if (player_at.x > rocks[i].x) {
                 //player at right
-                player_at.x = rocks[i].x + rocks_radius.x + player_radius.x;
+                player_at.x = rocks[i].x + rock_radius.x + player_radius.x;
             } else {
                 //player at left
-                player_at.x = rocks[i].x - rocks_radius.x - player_radius.x;
+                player_at.x = rocks[i].x - rock_radius.x - player_radius.x;
             }
         }
     }
@@ -255,8 +297,8 @@ void DogMode::update(float elapsed){
     for(int i = 0; i < rock_num; i++){
         for(int j = 0; j < cat_num; j++){
             //compute area of overlap:
-            glm::vec2 min = glm::max(rocks[i] - rocks_radius, cats[j] - cat_radius);
-            glm::vec2 max = glm::min(rocks[i] + rocks_radius, cats[j] + cat_radius);
+            glm::vec2 min = glm::max(rocks[i] - rock_radius, cats[j] - cat_radius);
+            glm::vec2 max = glm::min(rocks[i] + rock_radius, cats[j] + cat_radius);
             
             //if no overlap, no collision:
             if (min.x > max.x || min.y > max.y) continue;
@@ -265,20 +307,20 @@ void DogMode::update(float elapsed){
                 //wider overlap in x => restrict movement in y direction:
                 if (cats[j].y > rocks[i].y) {
                     //player at top
-                    cats[j].y = rocks[i].y + rocks_radius.y + cat_radius.y;
+                    cats[j].y = rocks[i].y + rock_radius.y + cat_radius.y;
                 } else {
                     //player at bottom
-                    cats[j].y = rocks[i].y - rocks_radius.y - cat_radius.y;
+                    cats[j].y = rocks[i].y - rock_radius.y - cat_radius.y;
                 }
                 
             }else{
                 //wider overlap in y => restrict movement in x direction:
                 if (cats[j].x > rocks[i].x) {
                     //player at right
-                    cats[j].x = rocks[i].x + rocks_radius.x + cat_radius.x;
+                    cats[j].x = rocks[i].x + rock_radius.x + cat_radius.x;
                 } else {
                     //player at left
-                    cats[j].x = rocks[i].x - rocks_radius.x - cat_radius.x;
+                    cats[j].x = rocks[i].x - rock_radius.x - cat_radius.x;
                 }
             }
         }
@@ -318,8 +360,8 @@ void DogMode::update(float elapsed){
     
     //--------floor color update-----
     if (left.pressed || right.pressed || up.pressed || down.pressed){
-        for(int i = 0; i < floorMap.size(); i++){
-            for(int j = 0; j < floorMap[0].size(); j++){
+        for(int i = 0; i < floorMap_radius.x; i++){
+            for(int j = 0; j < floorMap_radius.y; j++){
                 floorMap[i][j] *= -1;   //only swap pink and green floor, rock not change
             }
         }
@@ -328,7 +370,8 @@ void DogMode::update(float elapsed){
 }
 
 void DogMode::draw(glm::uvec2 const &drawable_size){
-    //TODO: implement this
+    
+    static std::mt19937 mt;     //mersenne twister pseudo-random number generator
     
     //--- set ppu state based on game state ---
     
@@ -397,6 +440,7 @@ void DogMode::draw(glm::uvec2 const &drawable_size){
     
     
     //floor, not enough sprites
+    /*
     int count = 0;
     while(count < 10){
         float x = (mt() / float(mt.max())) * 240.0f;
@@ -458,7 +502,7 @@ void DogMode::draw(glm::uvec2 const &drawable_size){
         
         count++;
     }
-    
+    */
 
     
     //--- actually draw ---

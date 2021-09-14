@@ -114,6 +114,7 @@ if $(OS) = NT { #Windows
 
 #Store the names of all the .cpp files to build into a variable:
 GAME_NAMES =
+	DogMode
 	PlayMode
 	PPU466
 	main

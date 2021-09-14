@@ -4,6 +4,9 @@
 //The 'PlayMode' mode plays the game:
 #include "PlayMode.hpp"
 
+//My game mode
+#include "DogMode.hpp"
+
 //For asset loading:
 #include "Load.hpp"
 
@@ -93,7 +96,9 @@ int main(int argc, char **argv) {
 	call_load_functions();
 
 	//------------ create game mode + make current --------------
-	Mode::set_current(std::make_shared< PlayMode >());
+	//Mode::set_current(std::make_shared< PlayMode >());
+    std::cout << "reached game mode" << std::endl;
+    Mode::set_current(std::make_shared< DogMode >());
 
 	//------------ main loop ------------
 
