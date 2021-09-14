@@ -6,7 +6,7 @@ Design: Floor changes color when you are moving. The cats will also move with yo
 
 Screen Shot:
 
-![Screen Shot](screenshot.png)
+![Screen Shot](gameplay.png)
 
 How Your Asset Pipeline Works:
 
