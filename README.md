@@ -20,3 +20,7 @@ Sources: All assets are created by myself.
 
 This game was built with [NEST](NEST.md).
 
+Note:
+
+This game is not completely finished.
+
