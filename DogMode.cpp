@@ -15,6 +15,7 @@
 
 #include <random>
 #include <math.h>
+#include <bitset>
 
 
 DogMode::DogMode(){
@@ -36,7 +37,7 @@ DogMode::DogMode(){
     //PPU sprite: positions (x,y) place the bottom-left, sprite index is an index into the tile table
     //only draw 64 sprite a time, other should move outside screen
     
-    std::cout << "about to load" << std::endl;
+    //std::cout << "about to load" << std::endl;
     
     bool loaded = load_asset();
     assert(loaded);
@@ -115,11 +116,11 @@ bool DogMode::load_asset(){
         
         read_chunk(is_tile, magic, &tile);                                     //tile: 16 8-bit number, include bit 0 and bit 1
         
-        std::cout << "tile: " << std::endl;
+        //std::cout << "tile: " << std::endl;
         for(uint8_t i = 0; i < 8; i++){
             ppu.tile_table[count].bit0[i] = tile[i];
             ppu.tile_table[count].bit1[i] = tile[i + 8];
-            std::cout << std::bitset<8>(tile[i + 8]) << " "<< std::bitset<8>(tile[i]) << std::endl;
+            //std::cout << std::bitset<8>(tile[i + 8]) << " "<< std::bitset<8>(tile[i]) << std::endl;
         }
         
         //check size
@@ -231,7 +232,7 @@ void DogMode::update(float elapsed){
     //cat move only when player moves
     if(left.pressed || right.pressed || down.pressed || up.pressed){
         float choice;
-        for(int i = 0; cat_num; i++){
+        for(int i = 0; i < cats.size(); i++){
             choice = (mt() / float(mt.max())) * 4.0f;   //random choose up, down, left, right
             if(choice <= 1.0f){
                 cats[i].y += MoveStep;  //up
@@ -259,7 +260,7 @@ void DogMode::update(float elapsed){
     //--------collision check--------
     
     //player vs cats:
-    for(int i = 0; i < cat_num; i++){
+    for(int i = 0; i < cats.size(); i++){
         //compute area of overlap:
         glm::vec2 min = glm::max(cats[i] - cat_radius, player_at - player_radius);
         glm::vec2 max = glm::min(cats[i] + cat_radius, player_at + player_radius);
@@ -274,7 +275,7 @@ void DogMode::update(float elapsed){
     }
     
     //player vs rocks:
-    for(int i = 0; i < rock_num; i++){
+    for(int i = 0; i < rocks.size(); i++){
         //compute area of overlap:
         glm::vec2 min = glm::max(rocks[i] - rock_radius, player_at - player_radius);
         glm::vec2 max = glm::min(rocks[i] + rock_radius, player_at + player_radius);
@@ -305,8 +306,8 @@ void DogMode::update(float elapsed){
     }
     
     //cat vs rock:
-    for(int i = 0; i < rock_num; i++){
-        for(int j = 0; j < cat_num; j++){
+    for(int i = 0; i < rocks.size(); i++){
+        for(int j = 0; j < cats.size(); j++){
             //compute area of overlap:
             glm::vec2 min = glm::max(rocks[i] - rock_radius, cats[j] - cat_radius);
             glm::vec2 max = glm::min(rocks[i] + rock_radius, cats[j] + cat_radius);
@@ -353,7 +354,7 @@ void DogMode::update(float elapsed){
     }
     
     //cat vs scene boundary:
-    for(int i = 0; i < cat_num; i++){
+    for(int i = 0; i < cats.size(); i++){
         if(cats[i].y > scene_radius.y - cat_radius.y){
             cats[i].y = scene_radius.y - cat_radius.y;
         }
@@ -449,7 +450,7 @@ void DogMode::draw(glm::uvec2 const &drawable_size){
     
     
     //cat sprite, cat_num: 5
-    for(int i = 0; i < cat_num; i++){
+    for(int i = 0; i < cats.size(); i++){
         //head
         ppu.sprites[i + 2].x = int32_t(cats[i].x + 8.0f);   //head right shift 8 pixel, head at the right
         ppu.sprites[i + 2].y = int32_t(cats[i].y);
